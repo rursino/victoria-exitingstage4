@@ -40,6 +40,21 @@ class CoronaStats:
 
         return pd.Series(np.array(ms), self.data.index[7:-7-7])
 
+    def forecast_to_date(self, date):
+        """
+        """
+
+        start = self.data.index[0] + pd.Timedelta(1, 'day')
+        end = pd.to_datetime(date)
+        time_range = pd.date_range(start=start, end=end)
+
+        forecast_data = {}
+        for day in time_range:
+            forecast_data[day] = {key:self.predict_cases(day, print_results=False)[key]
+                                  for key in['moving_average', 'moving_std']}
+
+        return pd.DataFrame(forecast_data).T
+
     def plot(self):
         """ Plot timeseries of daily cases with a 14-day moving average plot.
         """
@@ -49,7 +64,7 @@ class CoronaStats:
         plt.plot(self.data.index[7:-7], self._moving_average(), color='r',
                  linewidth=10)
 
-        forecast_ma = self._forecast_df('10/26/2020')
+        forecast_ma = self.forecast_to_date('10/26/2020')
         index = forecast_ma.index - pd.Timedelta(7, 'days')
         plt.plot(index, forecast_ma['moving_average'], color='orange',
                  linewidth=10)
@@ -124,26 +139,11 @@ class CoronaStats:
         else:
             return results
 
-    def _forecast_df(self, date):
-        """
-        """
-
-        start = self.data.index[0] + pd.Timedelta(1, 'day')
-        end = pd.to_datetime(date)
-        time_range = pd.date_range(start=start, end=end)
-
-        forecast_data = {}
-        for day in time_range:
-            forecast_data[day] = {key:self.predict_cases(day, print_results=False)[key]
-                                  for key in['moving_average', 'moving_std']}
-
-        return pd.DataFrame(forecast_data).T
-
     def forecast_plot(self, date):
         """
         """
 
-        forecast = self._forecast_df(date)
+        forecast = self.forecast_to_date(date)
         forecast_ma = forecast['moving_average']
         forecast_std = forecast['moving_std']
 
@@ -154,3 +154,26 @@ class CoronaStats:
         plt.fill_between(forecast_ma.index, forecast_ma - 1.645*forecast_std,
                          forecast_ma + 1.645*forecast_std, color='gray',
                          alpha=0.2)
+
+    def date_to_trigger(self, moving_average=30):
+        """
+        """
+
+        t = 1
+        ma = moving_average + 1
+        while ma >= moving_average:
+            ma = self.model(t)[0]
+            t += 1
+
+        return t
+
+
+
+
+df = CoronaStats('./../data/daily_cases.csv')
+
+df.date_to_trigger(5)
+
+df.predict_cases('09/22/2020')
+
+df._moving_average()
