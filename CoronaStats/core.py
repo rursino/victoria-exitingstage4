@@ -9,13 +9,14 @@ from datetime import datetime
 
 
 class CoronaStats:
-    def __init__(self, data):
+    def __init__(self, data, regional_moving_average):
         _data = pd.read_csv(data, index_col='Date')
         _data.index = pd.to_datetime(_data.index + '-2020')
 
         self.data = _data
+        self.regional_ma = regional_moving_average
 
-    def _moving_average(self):
+    def _moving_average(self, remove_regional=0):
         """ Calculate an array of the 14-day moving averages.
         """
 
@@ -23,7 +24,7 @@ class CoronaStats:
 
         ma = []
         for i in range(len(cases) - 14):
-            ma.append(np.mean(cases[i:i+14]))
+            ma.append(np.mean(cases[i:i+14]) - remove_regional)
 
         return pd.Series(np.array(ma), self.data.index[7:-7])
 
@@ -32,7 +33,7 @@ class CoronaStats:
         """
 
         cases = self.data.Cases[7:-7]
-        ma = self._moving_average()
+        ma = self._moving_average(self.regional_ma)
 
         ms = []
         for i in range(len(cases) - 7):
@@ -78,7 +79,7 @@ class CoronaStats:
         """ Reproduction number based off the 14-day moving averages.
         """
 
-        ma = self._moving_average()
+        ma = self._moving_average(self.regional_ma)
         rrp = pd.Series(ma.values[:-1] / ma.values[1:], ma.index[1:])
 
         ma_rrp = []
@@ -91,7 +92,7 @@ class CoronaStats:
         """
         """
 
-        current_ma = self._moving_average()[0]
+        current_ma = self._moving_average(self.regional_ma)[0]
         current_std = self._moving_std()[0]
         current_rrp = self.rrp()[0]
 
@@ -159,7 +160,7 @@ class CoronaStats:
         """
         """
 
-        t = 1
+        t = 0
         ma = moving_average + 1
         while ma >= moving_average:
             ma = self.model(t)[0]
@@ -167,13 +168,15 @@ class CoronaStats:
 
         return t
 
+        date = self.data.index[0] + pd.Timedelta(t, 'days')
+
+        return date
 
 
+df = CoronaStats('./../data/net_cases.csv', 0.13)
 
-df = CoronaStats('./../data/daily_cases.csv')
+df.date_to_trigger(30)
 
-df.date_to_trigger(5)
+df.model(2)
 
-df.predict_cases('09/22/2020')
-
-df._moving_average()
+df.forecast_to_date('09/26/2020')
