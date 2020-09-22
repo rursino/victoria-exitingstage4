@@ -163,20 +163,9 @@ class CoronaStats:
         t = 0
         ma = moving_average + 1
         while ma >= moving_average:
-            ma = self.model(t)[0]
             t += 1
-
-        return t
+            ma = self.model(t)[0]
 
         date = self.data.index[0] + pd.Timedelta(t, 'days')
 
         return date
-
-
-df = CoronaStats('./../data/net_cases.csv', 0.13)
-
-df.date_to_trigger(30)
-
-df.model(2)
-
-df.forecast_to_date('09/26/2020')
