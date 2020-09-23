@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 class CoronaStats:
-    def __init__(self, data, regional_moving_average):
+    def __init__(self, data, regional_moving_average=0):
         _data = pd.read_csv(data, index_col='Date')
         _data.index = pd.to_datetime(_data.index + '-2020')
 
@@ -156,7 +156,7 @@ class CoronaStats:
                          forecast_ma + 1.645*forecast_std, color='gray',
                          alpha=0.2)
 
-    def date_to_trigger(self, moving_average=30):
+    def date_to_trigger(self, moving_average=5):
         """
         """
 
