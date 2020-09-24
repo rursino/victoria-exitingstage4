@@ -16,6 +16,8 @@ class CoronaStats:
         self.data = _data
         self.regional_ma = regional_moving_average
 
+        self.output_dir = './../results/'
+
     def _moving_average(self, remove_regional=0):
         """ Calculate an array of the 14-day moving averages.
         """
@@ -41,22 +43,7 @@ class CoronaStats:
 
         return pd.Series(np.array(ms), self.data.index[7:-7-7])
 
-    def forecast_to_date(self, date):
-        """
-        """
-
-        start = self.data.index[0] + pd.Timedelta(1, 'day')
-        end = pd.to_datetime(date)
-        time_range = pd.date_range(start=start, end=end)
-
-        forecast_data = {}
-        for day in time_range:
-            forecast_data[day] = {key:self.predict_cases(day, print_results=False)[key]
-                                  for key in['moving_average', 'moving_std']}
-
-        return pd.DataFrame(forecast_data).T
-
-    def plot(self):
+    def plot(self, save=False):
         """ Plot timeseries of daily cases with a 14-day moving average plot.
         """
 
@@ -74,6 +61,9 @@ class CoronaStats:
         y = self._moving_average()[:-7]
         plt.fill_between(y.index, y - 1.645*std, y + 1.645*std,
                          color='gray', alpha=0.2)
+
+        if save:
+            plt.savefig(self.output_dir + 'images/plot.png')
 
     def rrp(self):
         """ Reproduction number based off the 14-day moving averages.
@@ -140,7 +130,27 @@ class CoronaStats:
         else:
             return results
 
-    def forecast_plot(self, date):
+    def forecast_to_date(self, date, save=False):
+        """
+        """
+
+        start = self.data.index[0] + pd.Timedelta(1, 'day')
+        end = pd.to_datetime(date)
+        time_range = pd.date_range(start=start, end=end)
+
+        forecast_data = {}
+        for day in time_range:
+            forecast_data[day] = {key:self.predict_cases(day, print_results=False)[key]
+                                  for key in['moving_average', 'moving_std']}
+
+        forecast_dataframe = pd.DataFrame(forecast_data).T
+
+        if save:
+            forecast_dataframe.to_csv(self.output_dir + 'prediction.csv')
+
+        return forecast_dataframe
+
+    def forecast_plot(self, date, save=False):
         """
         """
 
@@ -156,7 +166,10 @@ class CoronaStats:
                          forecast_ma + 1.645*forecast_std, color='gray',
                          alpha=0.2)
 
-    def date_to_trigger(self, moving_average=5):
+        if save:
+            plt.savefig(self.output_dir + 'images/forecast_plot.png')
+
+    def date_to_trigger(self, moving_average=5, save=False):
         """
         """
 
@@ -166,6 +179,11 @@ class CoronaStats:
             t += 1
             ma = self.model(t)[0]
 
-        date = self.data.index[0] + pd.Timedelta(t, 'days')
+        date = (self.data.index[0] + pd.Timedelta(t, 'days')).strftime('%d-%m-%Y')
+
+        if save:
+            with open(self.output_dir + 'date_to_trigger.csv', 'w') as f:
+                f.write(f'Moving average,{moving_average}\n')
+                f.write(f'Date,{date}\n')
 
         return date
