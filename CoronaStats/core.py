@@ -62,6 +62,17 @@ class CoronaStats:
         plt.fill_between(y.index, y - 1.645*std, y + 1.645*std,
                          color='gray', alpha=0.2)
 
+        date_to_trigger = pd.to_datetime(self.date_to_trigger())
+        plt.scatter(date_to_trigger, 5, s=1000, marker='x', color='k')
+        plt.text(date_to_trigger - pd.Timedelta(20, 'days'),
+                 500,
+                 'Date to Step 3 trigger\n{}'.format(date_to_trigger.strftime('%d-%m-%Y')),
+                 fontsize=26
+                )
+
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+
         if save:
             plt.savefig(self.output_dir + 'images/plot.png')
 
@@ -187,3 +198,12 @@ class CoronaStats:
                 f.write(f'Date,{date}\n')
 
         return date
+
+df = CoronaStats('./../data/net_cases.csv', 17.785-18.2)
+df.date_to_trigger()
+
+df._moving_average()
+
+df.rrp().plot()
+
+df.plot()
