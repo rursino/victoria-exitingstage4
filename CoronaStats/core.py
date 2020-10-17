@@ -199,11 +199,11 @@ class CoronaStats:
 
         return date
 
-df = CoronaStats('./../data/net_cases.csv', 0)
+df = CoronaStats('./../data/net_cases.csv', 7.78-7.5)
 df.date_to_trigger()
 
 df._moving_average()
 
-df.rrp()
+df.rrp().plot()
 
 df.plot()
