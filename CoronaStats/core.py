@@ -52,7 +52,7 @@ class CoronaStats:
         plt.plot(self.data.index[7:-7], self._moving_average(), color='r',
                  linewidth=10)
 
-        forecast_ma = self.forecast_to_date('10/26/2020')
+        forecast_ma = self.forecast_to_date('11/6/2020')
         index = forecast_ma.index - pd.Timedelta(7, 'days')
         plt.plot(index, forecast_ma['moving_average'], color='orange',
                  linewidth=10)
@@ -84,10 +84,10 @@ class CoronaStats:
         rrp = pd.Series(ma.values[:-1] / ma.values[1:], ma.index[1:])
 
         ma_rrp = []
-        for i in range(len(rrp) - 14):
-            ma_rrp.append(np.mean(rrp[i:i+14]))
+        for i in range(len(rrp) - 7):
+            ma_rrp.append(np.mean(rrp[i:i+7]))
 
-        return pd.Series(np.array(ma_rrp), rrp.index[:-14])
+        return pd.Series(np.array(ma_rrp), rrp.index[:-7])
 
     def model(self, t):
         """
@@ -199,7 +199,7 @@ class CoronaStats:
 
         return date
 
-df = CoronaStats('./../data/net_cases.csv', 7.78-7.5)
+df = CoronaStats('./../data/net_cases.csv', 0.1)
 df.date_to_trigger()
 
 df._moving_average()
