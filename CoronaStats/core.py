@@ -202,8 +202,8 @@ class CoronaStats:
 df = CoronaStats('./../data/net_cases.csv', 0.1)
 df.date_to_trigger()
 
-df._moving_average()
+# df._moving_average()
 
-df.rrp().plot()
+# df.rrp().plot()
 
-df.plot()
+# df.plot()
