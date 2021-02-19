@@ -10,6 +10,8 @@ from datetime import datetime
 
 class CoronaStats:
     def __init__(self, data, regional_moving_average=0):
+        """ Initialise a class of CoronaStats.
+        """
         _data = pd.read_csv(data, index_col='Date')
         _data.index = pd.to_datetime(_data.index + '-2020')
 
@@ -90,7 +92,7 @@ class CoronaStats:
         return pd.Series(np.array(ma_rrp), rrp.index[:-7])
 
     def model(self, t):
-        """
+        """ The model that projects the future moving average and its standard deviation, t days ahead of the current date.
         """
 
         current_ma = self._moving_average(self.regional_ma)[0]
@@ -142,7 +144,7 @@ class CoronaStats:
             return results
 
     def forecast_to_date(self, date, save=False):
-        """
+        """ Produces a timeseries of forecast statistics produced by the model each day until set date.
         """
 
         start = self.data.index[0] + pd.Timedelta(1, 'day')
@@ -162,7 +164,7 @@ class CoronaStats:
         return forecast_dataframe
 
     def forecast_plot(self, date, save=False):
-        """
+        """ Plots the statistics produced from running the model.
         """
 
         forecast = self.forecast_to_date(date)
@@ -181,7 +183,7 @@ class CoronaStats:
             plt.savefig(self.output_dir + 'images/forecast_plot.png')
 
     def date_to_trigger(self, moving_average=5, save=False):
-        """
+        """ Calculates the date that the moving average reaches below the threshold trigger.
         """
 
         t = 0
@@ -198,12 +200,3 @@ class CoronaStats:
                 f.write(f'Date,{date}\n')
 
         return date
-
-df = CoronaStats('./../data/net_cases.csv', 0.1)
-df.date_to_trigger()
-
-# df._moving_average()
-
-# df.rrp().plot()
-
-# df.plot()

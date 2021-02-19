@@ -1,5 +1,5 @@
 # Dockerfile, Image, Container
 FROM python:3.7.6
-ADD CoronaStats/docker-test.py .
+ADD CoronaStats/corona.py .
 RUN pip install pandas numpy scipy matplotlib datetime
-CMD [ "python", "docker-test.py" ]
+CMD [ "python", "corona.py" ]
